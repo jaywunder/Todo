@@ -11,23 +11,13 @@ import com.jacobwunder.todo.data.TodoData;
 public class TodoEditorViewModel extends ViewModel {
     public static final String TODO_DATA = "TODO_DATA";
 
-    private MutableLiveData<TodoData> todoDataMutableLiveData;
+    private MutableLiveData<TodoData> todoDataMutableLiveData = new MutableLiveData<>();
 
     public LiveData<TodoData> getTodoData() {
-        if (todoDataMutableLiveData == null) {
-            todoDataMutableLiveData = new MutableLiveData<>();
-        }
-
         return todoDataMutableLiveData;
     }
 
-    public void initializeFromBundle(Bundle bundle) {
-        todoDataMutableLiveData.postValue(
-            (TodoData) bundle.getSerializable(TODO_DATA)
-        );
-    }
-
-    public void saveTodoData() {
-
+    public void initialize(TodoData data) {
+        todoDataMutableLiveData.postValue(data);
     }
 }

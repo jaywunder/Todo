@@ -1,16 +1,20 @@
 package com.jacobwunder.todo;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.jacobwunder.todo.data.AppDatabase;
 import com.jacobwunder.todo.data.TodoData;
 import com.jacobwunder.todo.ui.todoeditor.TodoEditorViewModel;
 
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.room.Room;
 
 import android.view.View;
 import android.view.Menu;
@@ -21,15 +25,24 @@ import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
-    List<TodoData> database = new ArrayList<>();
+    AppDatabase db;
 
     private RecyclerView recyclerView;
-    private RecyclerView.Adapter mAdapter;
+    private TodoAdapter mAdapter;
     private RecyclerView.LayoutManager layoutManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        db = Room.databaseBuilder(
+                getApplicationContext(),
+                AppDatabase.class,
+                "todos"
+        ).allowMainThreadQueries().build();
+
+//        db.todoDao().insert(new TodoData("Make a database"));
+
         setContentView(R.layout.activity_main);
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -38,7 +51,7 @@ public class MainActivity extends AppCompatActivity {
         fab.setOnClickListener((View view) -> {
             Intent intent = new Intent(view.getContext(), TodoEditor.class);
             intent.putExtra(TodoEditorViewModel.TODO_DATA, new TodoData());
-            view.getContext().startActivity(intent);
+            ((Activity) view.getContext()).startActivityForResult(intent, 1);
         });
 
         recyclerView = findViewById(R.id.todo_recycler_view);
@@ -48,14 +61,7 @@ public class MainActivity extends AppCompatActivity {
         layoutManager = new LinearLayoutManager(this);
         recyclerView.setLayoutManager(layoutManager);
 
-
-        for (int i = 0; i < 10; i++) {
-            database.add(new TodoData("Groceries"));
-            database.add(new TodoData("Laundry"));
-            database.add(new TodoData("Homework"));
-        }
-
-        mAdapter = new TodoAdapter(database);
+        mAdapter = new TodoAdapter(db);
         recyclerView.setAdapter(mAdapter);
     }
 
@@ -79,5 +85,35 @@ public class MainActivity extends AppCompatActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        System.out.println("FROM MAINACTIVITY");
+        System.out.println(requestCode);
+        System.out.println(resultCode);
+
+        if (requestCode == 1 && resultCode == RESULT_OK) {
+            if (!(boolean) data.getSerializableExtra("Delete")) {
+                TodoData todoData = (TodoData) data.getSerializableExtra(TodoEditorViewModel.TODO_DATA);
+                db.todoDao().insert(todoData);
+            }
+            mAdapter.updateTodos();
+            mAdapter.notifyDataSetChanged();
+        }
+
+        if (requestCode == 2 && resultCode == RESULT_OK) {
+            TodoData todoData = (TodoData) data.getSerializableExtra(TodoEditorViewModel.TODO_DATA);
+
+            if ((boolean) data.getSerializableExtra("Delete")) {
+                db.todoDao().delete(todoData);
+            } else {
+                db.todoDao().update(todoData);
+            }
+            mAdapter.updateTodos();
+            mAdapter.notifyDataSetChanged();
+        }
     }
 }
