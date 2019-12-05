@@ -21,22 +21,25 @@ public class TodoData implements java.io.Serializable {
     private String description = "";
     private boolean done = false;
 
-    @Ignore
-    private String[] tags;
-
     public TodoData() {}
 
     public TodoData(String name) {
-        this.id = 0;
         this.name = name;
     }
 
-//    public TodoData(int id, String name, String description, String[] tags) {
-//        this.id = 0;
-//        this.name = name;
-//        this.description = description;
-//        this.tags = tags;
-//    }
+    public TodoData(String name, String description) {
+        this.name = name;
+        this.description = description;
+    }
+
+    public static TodoData copy(TodoData other) {
+        TodoData result = new TodoData();
+        result.id = other.id;
+        result.name = other.name + "";
+        result.description = other.description + "";
+        result.done = other.done;
+        return result;
+    }
 
     public int getId() { return id; }
 
@@ -60,12 +63,6 @@ public class TodoData implements java.io.Serializable {
         this.description = description;
     }
 
-    public String[] getTags() {
-        return tags;
-    }
-
-    public void setTags(String[] tags) { this.tags = tags; }
-
     public boolean isDone() {
         return done;
     }
@@ -80,7 +77,6 @@ public class TodoData implements java.io.Serializable {
                 "id=" + id +
                 ", name='" + name + '\'' +
                 ", description='" + description + '\'' +
-                ", tags=" + tags +
                 ", done=" + done +
                 '}';
     }

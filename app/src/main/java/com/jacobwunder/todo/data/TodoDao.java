@@ -4,6 +4,7 @@ import androidx.room.Dao;
 import androidx.room.Delete;
 import androidx.room.Insert;
 import androidx.room.Query;
+import androidx.room.Update;
 
 import com.jacobwunder.todo.data.TodoData;
 
@@ -19,7 +20,16 @@ public interface TodoDao {
     TodoData getById(int id);
 
     @Insert
+    void insert(TodoData todo);
+
+    @Insert
     void insertAll(TodoData... todos);
+
+    @Update
+    void update(TodoData todo);
+
+    @Update
+    void updateAll(TodoData... todos);
 
     @Delete
     void delete(TodoData user);
